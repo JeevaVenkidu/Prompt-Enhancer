@@ -28,6 +28,31 @@
       container: '.input-area-container, form, .text-input-field-container',
       name: 'Gemini',
     },
+    'grok.com': {
+      input: 'textarea',
+      container: 'form',
+      name: 'Grok',
+    },
+    'x.com': {
+      input: 'textarea[placeholder*="Ask" i], textarea[aria-label*="Grok" i], div[data-testid="GrokDrawer"] textarea',
+      container: 'form, div[data-testid="GrokDrawer"], [role="button"]',
+      name: 'Grok on X',
+    },
+    'chat.deepseek.com': {
+      input: '#chat-input, textarea',
+      container: 'form, .chat-input-wrapper',
+      name: 'DeepSeek',
+    },
+    'huggingface.co': {
+      input: 'textarea',
+      container: 'form',
+      name: 'HuggingChat',
+    },
+    'perplexity.ai': {
+      input: 'textarea',
+      container: 'form, .relative',
+      name: 'Perplexity',
+    },
   };
 
   let currentPlatform = null;
@@ -351,63 +376,32 @@
   }
 
   /**
-   * Enhance prompt using AI API
+   * Enhance prompt using AI API via Background Service Worker
    */
   async function enhanceWithAPI(prompt, settings) {
     const { apiKey, apiProvider = 'gemini' } = settings;
 
-    const systemPrompt = `You are a prompt enhancement expert. Your job is to take a user's raw prompt and enhance it to be more effective, clear, and well-structured. 
-
-Rules:
-- Keep the user's original intent intact
-- Add structure (role, context, task, format) where missing
-- Make vague requests specific
-- Add appropriate constraints and output format instructions
-- Do NOT add information the user didn't ask about
-- Return ONLY the enhanced prompt, nothing else`;
-
-    if (apiProvider === 'gemini') {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              { role: 'user', parts: [{ text: `${systemPrompt}\n\nOriginal prompt to enhance:\n"${prompt}"` }] },
-            ],
-          }),
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        type: 'ENHANCE_WITH_API',
+        prompt,
+        template: currentSettings.template,
+        level: currentSettings.level,
+        apiKey,
+        apiProvider
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          return reject(new Error(chrome.runtime.lastError.message));
         }
-      );
-      const data = await response.json();
-      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        return data.candidates[0].content.parts[0].text.trim();
-      }
-      throw new Error('Gemini API returned no content');
-    } else if (apiProvider === 'openai') {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Enhance this prompt:\n"${prompt}"` },
-          ],
-          temperature: 0.7,
-        }),
+        if (response && response.error) {
+          return reject(new Error(response.error));
+        }
+        if (response && response.enhanced) {
+          return resolve(response.enhanced);
+        }
+        reject(new Error('Unknown error during API enhancement'));
       });
-      const data = await response.json();
-      if (data.choices?.[0]?.message?.content) {
-        return data.choices[0].message.content.trim();
-      }
-      throw new Error('OpenAI API returned no content');
-    }
-
-    throw new Error('Unsupported API provider');
+    });
   }
 
   /**

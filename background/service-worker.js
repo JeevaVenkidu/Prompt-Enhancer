@@ -59,7 +59,11 @@ async function handleAPIEnhancement(message) {
   if (apiProvider === 'gemini') {
     return await callGeminiAPI(prompt, systemPrompt, apiKey);
   } else if (apiProvider === 'openai') {
-    return await callOpenAIAPI(prompt, systemPrompt, apiKey);
+    return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://api.openai.com/v1/chat/completions', 'gpt-4o-mini');
+  } else if (apiProvider === 'groq') {
+    return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://api.groq.com/openai/v1/chat/completions', 'llama3-70b-8192');
+  } else if (apiProvider === 'openrouter') {
+    return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://openrouter.ai/api/v1/chat/completions', 'meta-llama/llama-3.1-70b-instruct:free');
   }
 
   throw new Error('Unsupported API provider');
@@ -135,17 +139,25 @@ async function callGeminiAPI(prompt, systemPrompt, apiKey) {
 }
 
 /**
- * Call OpenAI API
+ * Call OpenAI Compatible API (OpenAI, Groq, OpenRouter)
  */
-async function callOpenAIAPI(prompt, systemPrompt, apiKey) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+async function callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, endpoint, model) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${apiKey}`,
+  };
+
+  // OpenRouter requires an additional referer header (optional but recommended for ranking)
+  if (endpoint.includes('openrouter')) {
+    headers['HTTP-Referer'] = 'https://github.com/prompt-enhancer';
+    headers['X-Title'] = 'Prompt Enhancer Extension';
+  }
+
+  const response = await fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: headers,
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Please enhance this prompt:\n\n${prompt}` },
@@ -156,15 +168,15 @@ async function callOpenAIAPI(prompt, systemPrompt, apiKey) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'OpenAI API request failed');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || 'API request failed');
   }
 
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content;
 
   if (!text) {
-    throw new Error('OpenAI API returned empty response');
+    throw new Error('API returned empty response');
   }
 
   return text.trim();

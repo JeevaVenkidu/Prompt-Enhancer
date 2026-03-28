@@ -4,6 +4,12 @@
   "version": "1.0.0",
   "description": "Enhance your AI prompts with one click. Makes prompts clearer, more structured, and more effective on ChatGPT, Claude, and Gemini.",
   "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.groq.com/*",
+    "https://openrouter.ai/*"
+  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -18,7 +24,12 @@
         "https://chat.openai.com/*",
         "https://chatgpt.com/*",
         "https://claude.ai/*",
-        "https://gemini.google.com/*"
+        "https://gemini.google.com/*",
+        "https://grok.com/*",
+        "https://x.com/*",
+        "https://chat.deepseek.com/*",
+        "https://huggingface.co/chat/*",
+        "https://www.perplexity.ai/*"
       ],
       "js": ["lib/enhancer.js", "lib/templates.js", "content/content.js"],
       "css": ["styles/content.css"],

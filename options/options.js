@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const provider = $('#api-provider').value;
     if (provider === 'gemini') {
       $('#api-help').innerHTML = 'Get a free Gemini API key from <a class="help-link" href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>';
+    } else if (provider === 'groq') {
+      $('#api-help').innerHTML = 'Get a free Groq API key from <a class="help-link" href="https://console.groq.com/keys" target="_blank">Groq Console</a>';
+    } else if (provider === 'openrouter') {
+      $('#api-help').innerHTML = 'Get an OpenRouter API key from <a class="help-link" href="https://openrouter.ai/keys" target="_blank">OpenRouter</a>';
     } else {
       $('#api-help').innerHTML = 'Get an OpenAI API key from <a class="help-link" href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>';
     }
