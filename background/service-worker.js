@@ -61,7 +61,7 @@ async function handleAPIEnhancement(message) {
   } else if (apiProvider === 'openai') {
     return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://api.openai.com/v1/chat/completions', 'gpt-4o-mini');
   } else if (apiProvider === 'groq') {
-    return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://api.groq.com/openai/v1/chat/completions', 'llama3-70b-8192');
+    return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://api.groq.com/openai/v1/chat/completions', 'llama-3.3-70b-versatile');
   } else if (apiProvider === 'openrouter') {
     return await callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, 'https://openrouter.ai/api/v1/chat/completions', 'meta-llama/llama-3.1-70b-instruct:free');
   }
