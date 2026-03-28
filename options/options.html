@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Enhancer - Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root{
+      --primary:#8b5cf6;--primary-hover:#7c3aed;
+      --bg:#0f0f1a;--bg2:#1a1a2e;--surface:rgba(30,30,55,.8);
+      --text:#f1f1f5;--text2:#a1a1b5;--muted:#6b6b80;
+      --border:rgba(139,92,246,.2);--border2:rgba(139,92,246,.4);
+      --success:#10b981;--error:#ef4444;
+      --r:12px;--t:all .2s cubic-bezier(.4,0,.2,1);
+    }
+
+    body{
+      background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;
+      display:flex;justify-content:center;padding:40px 20px;min-height:100vh;
+    }
+
+    .container{width:100%;max-width:560px;}
+
+    /* ── Header ── */
+    .page-header{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+    .page-header-icon{font-size:28px;filter:drop-shadow(0 0 8px rgba(139,92,246,.4));}
+    .page-header h1{
+      font-size:24px;font-weight:800;letter-spacing:-.02em;
+      background:linear-gradient(135deg,#c4b5fd,#8b5cf6,#6366f1);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .page-header p{font-size:13px;color:var(--text2);}
+
+    /* ── Card ── */
+    .card{
+      background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:24px;margin-bottom:20px;
+    }
+    .card-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text);}
+    .card-desc{font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.5;}
+
+    /* ── Form ── */
+    .form-group{margin-bottom:18px;}
+    .form-group:last-child{margin-bottom:0;}
+    label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:8px;}
+    input[type="text"],input[type="password"],select,textarea{
+      width:100%;padding:10px 14px;background:rgba(0,0,0,.3);
+      border:1px solid var(--border);border-radius:8px;color:var(--text);
+      font-family:inherit;font-size:13px;outline:none;transition:var(--t);
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(139,92,246,.1);}
+    input::placeholder{color:var(--muted);}
+    select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2.5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+    select option{background:var(--bg2);color:var(--text);}
+
+    /* ── Buttons ── */
+    .btn{
+      display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+      border:1px solid var(--border);border-radius:8px;font-family:inherit;
+      font-size:13px;font-weight:600;cursor:pointer;transition:var(--t);
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border-color:rgba(255,255,255,.1);
+    }
+    .btn-primary:hover{background:linear-gradient(135deg,#7c3aed,#4f46e5);transform:translateY(-1px);box-shadow:0 4px 16px rgba(139,92,246,.4);}
+    .btn-secondary{background:var(--surface);color:var(--text2);}
+    .btn-secondary:hover{border-color:var(--border2);color:var(--text);}
+    .btn-danger{background:rgba(239,68,68,.1);color:var(--error);border-color:rgba(239,68,68,.3);}
+    .btn-danger:hover{background:rgba(239,68,68,.2);}
+
+    .btn-group{display:flex;gap:10px;margin-top:16px;}
+
+    /* ── Toast ── */
+    .toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;
+      z-index:9999;opacity:0;transition:all .3s ease;pointer-events:none;
+    }
+    .toast-visible{opacity:1;transform:translateX(-50%) translateY(0);}
+    .toast-success{background:linear-gradient(135deg,rgba(16,185,129,.9),rgba(5,150,105,.9));border:1px solid rgba(16,185,129,.4);}
+    .toast-error{background:linear-gradient(135deg,rgba(239,68,68,.9),rgba(220,38,38,.9));border:1px solid rgba(239,68,68,.4);}
+
+    /* ── Help ── */
+    .help-text{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4;}
+    .help-link{color:var(--primary);text-decoration:none;}
+    .help-link:hover{text-decoration:underline;}
+
+    /* ── Toggle ── */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+    .toggle-label{font-size:13px;font-weight:500;color:var(--text);}
+    .toggle-desc{font-size:11px;color:var(--muted);}
+    .toggle{
+      width:40px;height:22px;background:rgba(255,255,255,.1);border-radius:11px;
+      position:relative;cursor:pointer;transition:var(--t);border:none;
+    }
+    .toggle::after{
+      content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;
+      background:#fff;border-radius:50%;transition:var(--t);
+    }
+    .toggle.active{background:var(--primary);}
+    .toggle.active::after{left:21px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span class="page-header-icon">✨</span>
+          <h1>Settings</h1>
+        </div>
+        <p>Configure your Prompt Enhancer experience</p>
+      </div>
+    </div>
+
+    <!-- API Configuration -->
+    <div class="card">
+      <h2 class="card-title">🔑 AI API Configuration</h2>
+      <p class="card-desc">Add an API key to unlock AI-powered prompt enhancement. Without a key, the extension uses built-in templates (which still work great!).</p>
+
+      <div class="form-group">
+        <label>API Provider</label>
+        <select id="api-provider">
+          <option value="gemini">Google Gemini</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="api-key" placeholder="Enter your API key...">
+        <p class="help-text" id="api-help">
+          Get a free Gemini API key from <a class="help-link" href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>
+        </p>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="save-api">Save API Key</button>
+        <button class="btn btn-secondary" id="test-api">Test Connection</button>
+        <button class="btn btn-danger" id="remove-api">Remove Key</button>
+      </div>
+    </div>
+
+    <!-- Default Preferences -->
+    <div class="card">
+      <h2 class="card-title">⚙️ Default Preferences</h2>
+
+      <div class="form-group">
+        <label>Default Template</label>
+        <select id="default-template">
+          <option value="general">✨ General</option>
+          <option value="coding">💻 Coding</option>
+          <option value="writing">✍️ Writing</option>
+          <option value="analysis">📊 Analysis</option>
+          <option value="creative">🎨 Creative</option>
+          <option value="learning">📚 Learning</option>
+          <option value="academic">🎓 Academic</option>
+          <option value="business">💼 Business</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Default Enhancement Level</label>
+        <select id="default-level">
+          <option value="light">🌱 Light - Minor cleanup</option>
+          <option value="medium" selected>⚡ Medium - Add structure & role</option>
+          <option value="aggressive">🚀 Aggressive - Full restructure</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="save-prefs">Save Preferences</button>
+    </div>
+
+    <!-- Data Management -->
+    <div class="card">
+      <h2 class="card-title">📦 Data Management</h2>
+
+      <div class="form-group">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Save Enhancement History</div>
+            <div class="toggle-desc">Keep a record of your enhanced prompts</div>
+          </div>
+          <button class="toggle active" id="toggle-history"></button>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="export-data">Export Data</button>
+        <button class="btn btn-danger" id="clear-history">Clear History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+
+    // ── Load settings ──
+    chrome.storage.sync.get(['apiKey', 'apiProvider', 'template', 'level', 'saveHistory'], (r) => {
+      if (r.apiKey) $('#api-key').value = '••••••••••••••••';
+      if (r.apiProvider) $('#api-provider').value = r.apiProvider;
+      if (r.template) $('#default-template').value = r.template;
+      if (r.level) $('#default-level').value = r.level;
+      if (r.saveHistory === false) $('#toggle-history').classList.remove('active');
+    });
+
+    // ── API Provider change ──
+    $('#api-provider').addEventListener('change', () => {
+      const provider = $('#api-provider').value;
+      if (provider === 'gemini') {
+        $('#api-help').innerHTML = 'Get a free Gemini API key from <a class="help-link" href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>';
+      } else {
+        $('#api-help').innerHTML = 'Get an OpenAI API key from <a class="help-link" href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>';
+      }
+    });
+
+    // ── Save API Key ──
+    $('#save-api').addEventListener('click', () => {
+      const key = $('#api-key').value.trim();
+      if (!key || key === '••••••••••••••••') {
+        showToast('Please enter a valid API key', 'error');
+        return;
+      }
+      chrome.storage.sync.set({
+        apiKey: key,
+        apiProvider: $('#api-provider').value,
+      }, () => {
+        $('#api-key').value = '••••••••••••••••';
+        showToast('API key saved successfully!', 'success');
+      });
+    });
+
+    // ── Test API ──
+    $('#test-api').addEventListener('click', async () => {
+      chrome.storage.sync.get(['apiKey', 'apiProvider'], async (r) => {
+        if (!r.apiKey) {
+          showToast('No API key saved. Please save one first.', 'error');
+          return;
+        }
+
+        $('#test-api').textContent = 'Testing...';
+
+        try {
+          const response = await chrome.runtime.sendMessage({
+            type: 'ENHANCE_WITH_API',
+            prompt: 'Say hello',
+            template: 'general',
+            level: 'light',
+            apiKey: r.apiKey,
+            apiProvider: r.apiProvider || 'gemini',
+          });
+
+          if (response.error) throw new Error(response.error);
+          showToast('API connection successful! ✅', 'success');
+        } catch (e) {
+          showToast('API test failed: ' + e.message, 'error');
+        } finally {
+          $('#test-api').textContent = 'Test Connection';
+        }
+      });
+    });
+
+    // ── Remove API Key ──
+    $('#remove-api').addEventListener('click', () => {
+      chrome.storage.sync.remove(['apiKey'], () => {
+        $('#api-key').value = '';
+        showToast('API key removed', 'success');
+      });
+    });
+
+    // ── Save Preferences ──
+    $('#save-prefs').addEventListener('click', () => {
+      chrome.storage.sync.set({
+        template: $('#default-template').value,
+        level: $('#default-level').value,
+      }, () => {
+        showToast('Preferences saved!', 'success');
+      });
+    });
+
+    // ── Toggle History ──
+    $('#toggle-history').addEventListener('click', function () {
+      this.classList.toggle('active');
+      chrome.storage.sync.set({ saveHistory: this.classList.contains('active') });
+    });
+
+    // ── Export Data ──
+    $('#export-data').addEventListener('click', () => {
+      chrome.storage.local.get(['history'], (r) => {
+        const data = JSON.stringify(r.history || [], null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'prompt-enhancer-history.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('History exported!', 'success');
+      });
+    });
+
+    // ── Clear History ──
+    $('#clear-history').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all enhancement history?')) {
+        chrome.storage.local.set({ history: [] }, () => {
+          showToast('History cleared', 'success');
+        });
+      }
+    });
+
+    // ── Toast ──
+    function showToast(msg, type) {
+      const toast = $('#toast');
+      toast.textContent = msg;
+      toast.className = `toast toast-${type}`;
+      requestAnimationFrame(() => toast.classList.add('toast-visible'));
+      setTimeout(() => toast.classList.remove('toast-visible'), 3000);
+    }
+  </script>
+</body>
+</html>

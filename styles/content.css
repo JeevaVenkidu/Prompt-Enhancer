@@ -1,0 +1,248 @@
+/* ============================================
+   Prompt Enhancer - Injected Content Styles
+   ============================================ */
+
+/* Variables */
+:root {
+  --pe-primary: #8b5cf6;
+  --pe-primary-hover: #7c3aed;
+  --pe-primary-glow: rgba(139, 92, 246, 0.4);
+  --pe-bg: rgba(17, 17, 27, 0.95);
+  --pe-bg-glass: rgba(30, 30, 50, 0.85);
+  --pe-surface: rgba(45, 45, 70, 0.9);
+  --pe-text: #f1f1f5;
+  --pe-text-muted: #9ca3af;
+  --pe-border: rgba(139, 92, 246, 0.3);
+  --pe-success: #10b981;
+  --pe-warning: #f59e0b;
+  --pe-error: #ef4444;
+  --pe-radius: 12px;
+  --pe-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(139, 92, 246, 0.15);
+}
+
+/* Enhance Button Wrapper */
+#pe-wrapper {
+  position: absolute;
+  bottom: 8px;
+  right: 64px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Main Enhance Button */
+#pe-enhance-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 0 rgba(139, 92, 246, 0);
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+  user-select: none;
+  outline: none;
+}
+
+#pe-enhance-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5), 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+#pe-enhance-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.pe-btn-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pe-btn-text {
+  line-height: 1;
+}
+
+/* Loading State */
+#pe-enhance-btn.pe-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+#pe-enhance-btn.pe-loading .pe-btn-icon {
+  animation: pe-spin 1s linear infinite;
+}
+
+@keyframes pe-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Pulse animation on first appearance */
+#pe-enhance-btn {
+  animation: pe-pulse-once 2s ease-out;
+}
+
+@keyframes pe-pulse-once {
+  0% { box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 0 rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 8px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 2px 12px rgba(139, 92, 246, 0.3), 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+
+/* Template Dropdown */
+.pe-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: var(--pe-bg);
+  border: 1px solid var(--pe-border);
+  border-radius: var(--pe-radius);
+  box-shadow: var(--pe-shadow);
+  backdrop-filter: blur(20px);
+  padding: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.pe-dropdown-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.pe-dropdown-header {
+  padding: 8px 10px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pe-text-muted);
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.pe-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--pe-text);
+}
+
+.pe-dropdown-item:hover {
+  background: var(--pe-surface);
+  border-color: var(--pe-border);
+}
+
+.pe-dropdown-item-active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.pe-dropdown-icon {
+  font-size: 16px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.pe-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pe-dropdown-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pe-text);
+}
+
+.pe-dropdown-desc {
+  font-size: 11px;
+  color: var(--pe-text-muted);
+  line-height: 1.3;
+}
+
+/* Scrollbar */
+.pe-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+.pe-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pe-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+}
+
+/* Toast Notification */
+.pe-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  z-index: 999999;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.pe-toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.pe-toast-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.pe-toast-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.pe-toast-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.pe-toast-info {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(79, 70, 229, 0.9));
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
