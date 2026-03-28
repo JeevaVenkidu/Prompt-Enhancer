@@ -4,7 +4,7 @@
  */
 
 // Import enhancement modules
-importScripts('../lib/enhancer.js', '../lib/templates.js');
+importScripts('lib/enhancer.js', 'lib/templates.js');
 
 /**
  * Handle extension installation
