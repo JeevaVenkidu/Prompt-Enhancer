@@ -2,11 +2,12 @@ const $ = (sel) => document.querySelector(sel);
 
 // ── Load settings ──
 document.addEventListener('DOMContentLoaded', () => {
-  chrome.storage.sync.get(['apiKey', 'apiProvider', 'template', 'level', 'saveHistory'], (r) => {
+  chrome.storage.sync.get(['apiKey', 'apiProvider', 'template', 'level', 'mode', 'saveHistory'], (r) => {
     if (r.apiKey) $('#api-key').value = '••••••••••••••••';
     if (r.apiProvider) $('#api-provider').value = r.apiProvider;
     if (r.template) $('#default-template').value = r.template;
     if (r.level) $('#default-level').value = r.level;
+    if (r.mode) $('#default-mode').value = r.mode;
     if (r.saveHistory === false) $('#toggle-history').classList.remove('active');
   });
 
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.set({
       template: $('#default-template').value,
       level: $('#default-level').value,
+      mode: $('#default-mode').value,
     }, () => {
       showToast('Preferences saved!', 'success');
     });

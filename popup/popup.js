@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── State ───
   let currentTemplate = 'general';
   let currentLevel = 'medium';
+  let currentMode = 'hybrid';
 
   // ─── DOM Elements ───
   const templateGrid = document.getElementById('template-grid');
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusDot = document.querySelector('.status-dot');
   const tabs = document.querySelectorAll('.tab');
   const levelBtns = document.querySelectorAll('.level-btn');
+  const modeBtns = document.querySelectorAll('#mode-selector .level-btn');
 
   // ─── Initialize ───
   loadSettings();
@@ -78,6 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ─── Mode Selector ───
+  modeBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      currentMode = btn.dataset.mode;
+      modeBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      saveSettings();
+    });
+  });
+
   // ─── Enhance Button ───
   enhanceBtn.addEventListener('click', async () => {
     const prompt = promptInput.value.trim();
@@ -98,8 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const settings = await getStorage(['apiKey', 'apiProvider']);
       let enhanced;
 
-      if (settings.apiKey) {
-        // Send to service worker for API enhancement
+      if (currentMode === 'offline') {
+        enhanced = PromptEnhancer.enhance(prompt, { template: currentTemplate, level: currentLevel });
+      } else if (currentMode === 'online') {
+        if (!settings.apiKey) throw new Error('API Key required for Online Mode. Please set it in Settings.');
         enhanced = await sendMessage({
           type: 'ENHANCE_WITH_API',
           prompt,
@@ -109,11 +123,24 @@ document.addEventListener('DOMContentLoaded', () => {
           apiProvider: settings.apiProvider || 'gemini',
         });
       } else {
-        // Template-based enhancement
-        enhanced = PromptEnhancer.enhance(prompt, {
-          template: currentTemplate,
-          level: currentLevel,
-        });
+        // Hybrid Mode
+        if (!settings.apiKey) {
+          enhanced = PromptEnhancer.enhance(prompt, { template: currentTemplate, level: currentLevel });
+        } else {
+          try {
+            enhanced = await sendMessage({
+              type: 'ENHANCE_WITH_API',
+              prompt,
+              template: currentTemplate,
+              level: currentLevel,
+              apiKey: settings.apiKey,
+              apiProvider: settings.apiProvider || 'gemini',
+            });
+          } catch (apiError) {
+            console.warn('API error in hybrid mode, falling back to template', apiError);
+            enhanced = PromptEnhancer.enhance(prompt, { template: currentTemplate, level: currentLevel });
+          }
+        }
       }
 
       // Show result
@@ -124,12 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
       saveToHistory(prompt, enhanced);
     } catch (error) {
       console.error('Enhancement failed:', error);
-      // Fallback to template
-      const enhanced = PromptEnhancer.enhance(prompt, {
-        template: currentTemplate,
-        level: currentLevel,
-      });
-      resultText.textContent = enhanced;
+      if (currentMode === 'online') {
+        resultText.textContent = `Error: ${error.message}`;
+        resultText.style.color = '#ef4444'; // error color
+        setTimeout(() => resultText.style.color = '', 5000);
+      } else {
+        // Fallback to template
+        const enhanced = PromptEnhancer.enhance(prompt, {
+          template: currentTemplate,
+          level: currentLevel,
+        });
+        resultText.textContent = enhanced;
+      }
       resultSection.classList.remove('hidden');
     } finally {
       enhanceBtn.disabled = false;
@@ -254,6 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
           b.classList.toggle('active', b.dataset.level === currentLevel);
         });
       }
+      if (result.mode) {
+        currentMode = result.mode;
+        modeBtns.forEach((b) => {
+          b.classList.toggle('active', b.dataset.mode === currentMode);
+        });
+      }
     });
   }
 
@@ -261,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.set({
       template: currentTemplate,
       level: currentLevel,
+      mode: currentMode,
     });
   }
 

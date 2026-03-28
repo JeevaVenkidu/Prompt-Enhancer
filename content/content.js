@@ -61,6 +61,7 @@
   let currentSettings = {
     template: 'general',
     level: 'medium',
+    mode: 'hybrid',
   };
 
   /**
@@ -92,9 +93,10 @@
    */
   function loadSettings() {
     if (chrome?.storage?.sync) {
-      chrome.storage.sync.get(['template', 'level'], (result) => {
+      chrome.storage.sync.get(['template', 'level', 'mode'], (result) => {
         if (result.template) currentSettings.template = result.template;
         if (result.level) currentSettings.level = result.level;
+        if (result.mode) currentSettings.mode = result.mode;
       });
     }
   }
@@ -266,6 +268,44 @@
       dropdown.appendChild(item);
     });
 
+    // Enhancement Mode
+    const modeHeader = document.createElement('div');
+    modeHeader.className = 'pe-dropdown-header';
+    modeHeader.textContent = 'Enhancement Mode';
+    dropdown.appendChild(modeHeader);
+
+    ['offline', 'hybrid', 'online'].forEach((mode) => {
+      const item = document.createElement('button');
+      item.className = 'pe-dropdown-item pe-mode-item';
+      if (mode === currentSettings.mode) {
+        item.classList.add('pe-dropdown-item-active');
+      }
+      const labels = { offline: '🔒 Offline', hybrid: '🧠 Hybrid', online: '🌐 Online' };
+      const descs = {
+        offline: 'Fast template, completely private',
+        hybrid: 'Smart AI try, fallback to template',
+        online: 'Force AI API (shows exact errors)',
+      };
+      item.innerHTML = `
+        <span class="pe-dropdown-icon">${labels[mode].split(' ')[0]}</span>
+        <span class="pe-dropdown-info">
+          <span class="pe-dropdown-name">${labels[mode].split(' ')[1]}</span>
+          <span class="pe-dropdown-desc">${descs[mode]}</span>
+        </span>
+      `;
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentSettings.mode = mode;
+        dropdown.querySelectorAll('.pe-mode-item').forEach((el) => el.classList.remove('pe-dropdown-item-active'));
+        item.classList.add('pe-dropdown-item-active');
+        if (chrome?.storage?.sync) {
+          chrome.storage.sync.set({ mode });
+        }
+        dropdown.classList.remove('pe-dropdown-visible');
+      });
+      dropdown.appendChild(item);
+    });
+
     return dropdown;
   }
 
@@ -288,17 +328,35 @@
     try {
       // Check if API key is configured for AI-powered enhancement
       const settings = await getStorageData(['apiKey', 'apiProvider']);
-
       let enhanced;
-      if (settings.apiKey) {
-        // Use AI API for enhancement
-        enhanced = await enhanceWithAPI(promptText, settings);
-      } else {
-        // Use template-based enhancement
+
+      if (currentSettings.mode === 'offline') {
         enhanced = PromptEnhancer.enhance(promptText, {
           template: currentSettings.template,
           level: currentSettings.level,
         });
+      } else if (currentSettings.mode === 'online') {
+        if (!settings.apiKey) throw new Error('API Key required for Online Mode. Check Settings.');
+        enhanced = await enhanceWithAPI(promptText, settings);
+      } else {
+        // Hybrid Mode
+        if (!settings.apiKey) {
+          enhanced = PromptEnhancer.enhance(promptText, {
+            template: currentSettings.template,
+            level: currentSettings.level,
+          });
+        } else {
+          try {
+            enhanced = await enhanceWithAPI(promptText, settings);
+          } catch (apiError) {
+            console.warn('[Prompt Enhancer] API error in hybrid mode, falling back to template', apiError);
+            showToast('AI API failed, fell back to template.', 'warning');
+            enhanced = PromptEnhancer.enhance(promptText, {
+              template: currentSettings.template,
+              level: currentSettings.level,
+            });
+          }
+        }
       }
 
       // Set the enhanced text back
@@ -309,14 +367,17 @@
       saveToHistory(promptText, enhanced);
     } catch (error) {
       console.error('[Prompt Enhancer] Enhancement failed:', error);
-      showToast('Enhancement failed. Using template fallback.', 'error');
-
-      // Fallback to template-based
-      const enhanced = PromptEnhancer.enhance(promptText, {
-        template: currentSettings.template,
-        level: currentSettings.level,
-      });
-      setPromptText(inputEl, enhanced);
+      if (currentSettings.mode === 'online') {
+        showToast(`AI Error: ${error.message}`, 'error');
+      } else {
+        showToast('Enhancement failed. Using template fallback.', 'error');
+        // Fallback to template-based
+        const enhanced = PromptEnhancer.enhance(promptText, {
+          template: currentSettings.template,
+          level: currentSettings.level,
+        });
+        setPromptText(inputEl, enhanced);
+      }
     } finally {
       isEnhancing = false;
       enhanceButton.classList.remove('pe-loading');
@@ -470,6 +531,7 @@
       if (message.type === 'SETTINGS_UPDATED') {
         if (message.template) currentSettings.template = message.template;
         if (message.level) currentSettings.level = message.level;
+        if (message.mode) currentSettings.mode = message.mode;
         sendResponse({ status: 'ok' });
       }
       return true;
