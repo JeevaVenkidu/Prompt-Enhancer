@@ -52,7 +52,7 @@
     .page-header h1{
       font-size:28px; font-weight:800; letter-spacing:-.03em;
       background: linear-gradient(135deg, #e2e8f0, #c4b5fd);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .page-header p{ font-size:14px; color:var(--text2); margin-top:4px; }
 
@@ -77,13 +77,48 @@
       font-family: inherit; font-size: 14px; outline: none; transition: var(--t);
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary); background: rgba(0,0,0,0.4);
-      box-shadow: 0 0 0 4px rgba(139,92,246,0.15), inset 0 2px 4px rgba(0,0,0,0.1);
+    /* ── Custom Select ── */
+    .custom-select{ position:relative; width:100%; user-select:none; }
+    .custom-select-trigger{
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; padding:12px 16px; background:rgba(0,0,0,0.2);
+      border:1px solid var(--border); border-radius:10px; color:var(--text);
+      font-family:inherit; font-size:14px; cursor:pointer; transition:var(--t);
+      box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);
     }
-    input::placeholder{color:var(--muted);}
-    select{ appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; }
-    select option{ background: var(--bg2); color:var(--text); }
+    .custom-select-trigger:hover{ border-color:var(--border2); background: rgba(0,0,0,0.3); }
+    .custom-select.open .custom-select-trigger{
+      border-color:var(--primary); background:rgba(0,0,0,0.4);
+      box-shadow:0 0 0 4px rgba(139,92,246,0.15), inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .custom-select-arrow{
+      width:16px; height:16px; transition:var(--t); opacity: 0.6;
+      background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:center;
+    }
+    .custom-select.open .custom-select-arrow{ transform:rotate(180deg); opacity: 1; }
+    
+    .custom-select-options{
+      position:absolute; top:calc(100% + 8px); left:0; right:0; z-index:100;
+      background:rgba(24,24,27,0.85); border:1px solid var(--border); border-radius:12px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+      opacity:0; visibility:hidden; transform:translateY(-8px) scale(0.98); transition:var(--t);
+      overflow-y:auto; max-height:240px; padding:6px;
+    }
+    .custom-select.open .custom-select-options{ opacity:1; visibility:visible; transform:translateY(0) scale(1); }
+    
+    .custom-select-options::-webkit-scrollbar { width: 4px; }
+    .custom-select-options::-webkit-scrollbar-track { background: transparent; }
+    .custom-select-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    .custom-select-option{
+      display: flex; align-items: center; gap: 8px;
+      padding:10px 12px; font-size:13px; color:var(--text); cursor:pointer;
+      border-radius:8px; transition:var(--t); font-family:inherit;
+    }
+    .custom-select-option:hover{ background:rgba(255,255,255,0.08); }
+    .custom-select-option.selected{ background:rgba(139,92,246,0.15); color:#c4b5fd; font-weight:600; }
 
     /* ── Buttons ── */
     .btn{

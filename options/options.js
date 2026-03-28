@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (r.level) $('#default-level').value = r.level;
     if (r.mode) $('#default-mode').value = r.mode;
     if (r.saveHistory === false) $('#toggle-history').classList.remove('active');
+    
+    initCustomSelects(); // Initialize custom glassmorphic dropdowns
+    
+    // Trigger visual help update for API provider on load
+    $('#api-provider').dispatchEvent(new Event('change'));
   });
 
   // ── API Provider change ──
@@ -128,4 +133,74 @@ function showToast(msg, type) {
   toast.className = `toast toast-${type}`;
   requestAnimationFrame(() => toast.classList.add('toast-visible'));
   setTimeout(() => toast.classList.remove('toast-visible'), 3000);
+}
+
+// ── Custom Dropdowns ──
+function initCustomSelects() {
+  document.querySelectorAll('select').forEach(select => {
+    select.style.display = 'none';
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select';
+    select.parentNode.insertBefore(wrapper, select.nextSibling);
+
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    
+    const triggerText = document.createElement('span');
+    triggerText.textContent = select.options[select.selectedIndex]?.text || '';
+    
+    const arrow = document.createElement('div');
+    arrow.className = 'custom-select-arrow';
+    
+    trigger.appendChild(triggerText);
+    trigger.appendChild(arrow);
+    wrapper.appendChild(trigger);
+
+    const optionsList = document.createElement('div');
+    optionsList.className = 'custom-select-options';
+    
+    Array.from(select.options).forEach((opt, idx) => {
+      const optionEl = document.createElement('div');
+      optionEl.className = 'custom-select-option';
+      if (idx === select.selectedIndex) optionEl.classList.add('selected');
+      optionEl.textContent = opt.text;
+      optionEl.dataset.value = opt.value;
+      
+      optionEl.addEventListener('click', (e) => {
+        select.value = opt.value;
+        select.dispatchEvent(new Event('change'));
+        
+        triggerText.textContent = opt.text;
+        optionsList.querySelectorAll('.custom-select-option').forEach(el => el.classList.remove('selected'));
+        optionEl.classList.add('selected');
+        
+        wrapper.classList.remove('open');
+        e.stopPropagation();
+      });
+      optionsList.appendChild(optionEl);
+    });
+
+    wrapper.appendChild(optionsList);
+
+    trigger.addEventListener('click', (e) => {
+      document.querySelectorAll('.custom-select').forEach(cs => {
+        if (cs !== wrapper) cs.classList.remove('open');
+      });
+      wrapper.classList.toggle('open');
+      e.stopPropagation();
+    });
+
+    select.addEventListener('change', () => {
+      triggerText.textContent = select.options[select.selectedIndex]?.text || '';
+      optionsList.querySelectorAll('.custom-select-option').forEach((el, idx) => {
+        if (idx === select.selectedIndex) el.classList.add('selected');
+        else el.classList.remove('selected');
+      });
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select').forEach(cs => cs.classList.remove('open'));
+  });
 }
