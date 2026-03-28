@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusText = document.getElementById('status-text');
   const statusDot = document.querySelector('.status-dot');
   const tabs = document.querySelectorAll('.tab');
-  const levelBtns = document.querySelectorAll('.level-btn');
+  const levelBtns = document.querySelectorAll('#level-selector .level-btn');
   const modeBtns = document.querySelectorAll('#mode-selector .level-btn');
 
   // ─── Initialize ───
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ─── Settings ───
   function loadSettings() {
-    chrome.storage.sync.get(['template', 'level'], (result) => {
+    chrome.storage.sync.get(['template', 'level', 'mode'], (result) => {
       if (result.template) {
         currentTemplate = result.template;
         templateGrid?.querySelectorAll('.template-card').forEach((c) => {
