@@ -31,6 +31,7 @@ A Chrome Extension that enhances your prompts on ChatGPT, Claude, and Gemini —
 | **🎯 Smart Detection** | Auto-detects prompt category (coding, writing, analysis, creative, etc.) |
 | **📋 8 Templates** | Pre-built enhancement patterns for different use cases |
 | **⚡ 3 Enhancement Levels** | Light (cleanup), Medium (structure), Aggressive (full rewrite) |
+| **📝 Fix Typos** | Dedicated Quick Enhance button to instantly correct English grammar |
 | **🔌 Hybrid Mode** | Works offline with templates; add an API key for AI-powered enhancement |
 | **📜 History** | Keeps track of your last 50 enhanced prompts |
 | **🎨 Premium UI** | Dark glassmorphism design with smooth animations |
@@ -99,7 +100,7 @@ A Chrome Extension that enhances your prompts on ChatGPT, Claude, and Gemini —
 1. Click the extension icon in the toolbar
 2. Select a **template** (General, Coding, Writing, etc.)
 3. Choose an **enhancement level** (Light, Medium, Aggressive)
-4. Paste your prompt and click **Enhance Prompt**
+4. Paste your prompt and click **✨ Enhance Prompt** or **📝 Fix Typos**
 5. Copy the enhanced result
 
 > **⌨️ Shortcut:** Press `Ctrl+Enter` to enhance from the popup.
