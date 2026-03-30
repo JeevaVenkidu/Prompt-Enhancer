@@ -67,7 +67,7 @@
   /**
    * Initialize the content script
    */
-  function init() {
+  async function init() {
     // Detect current platform
     const hostname = window.location.hostname;
     for (const [domain, config] of Object.entries(PLATFORM_SELECTORS)) {
@@ -82,7 +82,7 @@
     console.log(`[Prompt Enhancer] Detected platform: ${currentPlatform.name}`);
 
     // Load user settings
-    loadSettings();
+    await loadSettings();
 
     // Start observing for input fields
     observeForInputFields();
@@ -91,14 +91,19 @@
   /**
    * Load settings from chrome.storage
    */
-  function loadSettings() {
-    if (chrome?.storage?.sync) {
-      chrome.storage.sync.get(['template', 'level', 'mode'], (result) => {
-        if (result.template) currentSettings.template = result.template;
-        if (result.level) currentSettings.level = result.level;
-        if (result.mode) currentSettings.mode = result.mode;
-      });
-    }
+  async function loadSettings() {
+    return new Promise((resolve) => {
+      if (chrome?.storage?.sync) {
+        chrome.storage.sync.get(['template', 'level', 'mode'], (result) => {
+          if (result.template) currentSettings.template = result.template;
+          if (result.level) currentSettings.level = result.level;
+          if (result.mode) currentSettings.mode = result.mode;
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
   }
 
   /**
@@ -204,7 +209,8 @@
 
     templates.forEach((template) => {
       const item = document.createElement('button');
-      item.className = 'pe-dropdown-item';
+      item.className = 'pe-dropdown-item pe-template-item';
+      item.dataset.value = template.key;
       if (template.key === currentSettings.template) {
         item.classList.add('pe-dropdown-item-active');
       }
@@ -219,7 +225,7 @@
         e.stopPropagation();
         currentSettings.template = template.key;
         // Update active state
-        dropdown.querySelectorAll('.pe-dropdown-item').forEach((el) => el.classList.remove('pe-dropdown-item-active'));
+        dropdown.querySelectorAll('.pe-template-item').forEach((el) => el.classList.remove('pe-dropdown-item-active'));
         item.classList.add('pe-dropdown-item-active');
         // Save setting
         if (chrome?.storage?.sync) {
@@ -239,6 +245,7 @@
     ['light', 'medium', 'aggressive'].forEach((level) => {
       const item = document.createElement('button');
       item.className = 'pe-dropdown-item pe-level-item';
+      item.dataset.value = level;
       if (level === currentSettings.level) {
         item.classList.add('pe-dropdown-item-active');
       }
@@ -277,6 +284,7 @@
     ['offline', 'hybrid', 'online'].forEach((mode) => {
       const item = document.createElement('button');
       item.className = 'pe-dropdown-item pe-mode-item';
+      item.dataset.value = mode;
       if (mode === currentSettings.mode) {
         item.classList.add('pe-dropdown-item-active');
       }
@@ -419,20 +427,12 @@
       // contenteditable divs
       el.focus();
 
-      // Clear existing content
-      el.innerHTML = '';
+      // Select all existing content
+      document.execCommand('selectAll', false, null);
 
-      // Set new content - handle line breaks
-      const lines = text.split('\n');
-      lines.forEach((line, idx) => {
-        const p = document.createElement('p');
-        p.textContent = line || '\u200B'; // Zero-width space for empty lines
-        el.appendChild(p);
-      });
-
-      // Trigger input event
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
+      // Insert the new text natively
+      // This correctly triggers the React/ProseMirror/Lexical input events
+      document.execCommand('insertText', false, text);
     }
   }
 
@@ -525,16 +525,30 @@
     }, 3000);
   }
 
-  // Listen for messages from popup
-  if (chrome?.runtime?.onMessage) {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'SETTINGS_UPDATED') {
-        if (message.template) currentSettings.template = message.template;
-        if (message.level) currentSettings.level = message.level;
-        if (message.mode) currentSettings.mode = message.mode;
-        sendResponse({ status: 'ok' });
+  // Listen for storage changes to sync with popup
+  if (chrome?.storage?.onChanged) {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'sync') {
+        let changed = false;
+        if (changes.template) { currentSettings.template = changes.template.newValue; changed = true; }
+        if (changes.level) { currentSettings.level = changes.level.newValue; changed = true; }
+        if (changes.mode) { currentSettings.mode = changes.mode.newValue; changed = true; }
+        
+        if (changed) {
+          const dropdown = document.getElementById('pe-dropdown');
+          if (dropdown) {
+            dropdown.querySelectorAll('.pe-template-item').forEach((el) => {
+              el.classList.toggle('pe-dropdown-item-active', el.dataset.value === currentSettings.template);
+            });
+            dropdown.querySelectorAll('.pe-level-item').forEach((el) => {
+              el.classList.toggle('pe-dropdown-item-active', el.dataset.value === currentSettings.level);
+            });
+            dropdown.querySelectorAll('.pe-mode-item').forEach((el) => {
+              el.classList.toggle('pe-dropdown-item-active', el.dataset.value === currentSettings.mode);
+            });
+          }
+        }
       }
-      return true;
     });
   }
 
