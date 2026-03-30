@@ -85,10 +85,16 @@
         <textarea id="prompt-input" class="textarea" placeholder="Paste your prompt here..." rows="4"></textarea>
       </div>
 
-      <button id="enhance-btn" class="btn-primary">
-        <span class="btn-icon">✨</span>
-        <span>Enhance Prompt</span>
-      </button>
+      <div class="quick-actions" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <button id="enhance-btn" class="btn-primary" style="margin-bottom: 0;">
+          <span class="btn-icon">✨</span>
+          <span>Enhance</span>
+        </button>
+        <button id="grammar-btn" class="btn-secondary" style="margin-bottom: 0;">
+          <span class="btn-icon">📝</span>
+          <span>Fix Typos</span>
+        </button>
+      </div>
 
       <!-- Result -->
       <div id="result-section" class="result-section hidden">

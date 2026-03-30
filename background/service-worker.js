@@ -52,9 +52,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
  * Handle AI-powered enhancement
  */
 async function handleAPIEnhancement(message) {
-  const { prompt, template, level, apiKey, apiProvider } = message;
+  const { prompt, template, level, apiKey, apiProvider, action } = message;
 
-  const systemPrompt = buildSystemPrompt(template, level);
+  const systemPrompt = action === 'grammar'
+    ? 'You are an expert English proofreader. Your ONLY task is to correct spelling, grammar, and syntax errors in the user\'s text. Do NOT change the original meaning, do NOT answer their questions, do NOT add conversational filler, and do NOT add markdown formatting unless it was in the original text. ONLY output the corrected text.'
+    : buildSystemPrompt(template, level);
 
   if (apiProvider === 'gemini') {
     return await callGeminiAPI(prompt, systemPrompt, apiKey);

@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const templateGrid = document.getElementById('template-grid');
   const promptInput = document.getElementById('prompt-input');
   const enhanceBtn = document.getElementById('enhance-btn');
+  const grammarBtn = document.getElementById('grammar-btn');
   const resultSection = document.getElementById('result-section');
   const resultText = document.getElementById('result-text');
   const copyBtn = document.getElementById('copy-btn');
@@ -90,8 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ─── Enhance Button ───
-  enhanceBtn.addEventListener('click', async () => {
+  // ─── Perform Enhancement ───
+  async function performEnhancement(action, btnEl, originalBtnHTML) {
     const prompt = promptInput.value.trim();
     if (!prompt) {
       promptInput.focus();
@@ -102,8 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    enhanceBtn.disabled = true;
-    enhanceBtn.innerHTML = '<span class="btn-icon">⏳</span><span>Enhancing...</span>';
+    if (action === 'grammar' && currentMode === 'offline') {
+      resultText.textContent = 'Grammar Fix requires AI. Please switch to Hybrid or Online mode.';
+      resultText.style.color = '#f59e0b'; // warning color
+      resultSection.classList.remove('hidden');
+      setTimeout(() => resultText.style.color = '', 5000);
+      return;
+    }
+
+    btnEl.disabled = true;
+    btnEl.innerHTML = `<span class="btn-icon">⏳</span><span>${action === 'grammar' ? 'Fixing...' : 'Enhancing...'}</span>`;
 
     try {
       // Check for API key
@@ -116,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!settings.apiKey) throw new Error('API Key required for Online Mode. Please set it in Settings.');
         enhanced = await sendMessage({
           type: 'ENHANCE_WITH_API',
+          action,
           prompt,
           template: currentTemplate,
           level: currentLevel,
@@ -125,11 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // Hybrid Mode
         if (!settings.apiKey) {
+          if (action === 'grammar') throw new Error('API Key required for Grammar Check.');
           enhanced = PromptEnhancer.enhance(prompt, { template: currentTemplate, level: currentLevel });
         } else {
           try {
             enhanced = await sendMessage({
               type: 'ENHANCE_WITH_API',
+              action,
               prompt,
               template: currentTemplate,
               level: currentLevel,
@@ -137,7 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
               apiProvider: settings.apiProvider || 'gemini',
             });
           } catch (apiError) {
-            console.warn('API error in hybrid mode, falling back to template', apiError);
+            console.warn('API error in hybrid mode', apiError);
+            if (action === 'grammar') throw apiError;
+            // fall back to template
             enhanced = PromptEnhancer.enhance(prompt, { template: currentTemplate, level: currentLevel });
           }
         }
@@ -151,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveToHistory(prompt, enhanced);
     } catch (error) {
       console.error('Enhancement failed:', error);
-      if (currentMode === 'online') {
+      if (currentMode === 'online' || action === 'grammar') {
         resultText.textContent = `Error: ${error.message}`;
         resultText.style.color = '#ef4444'; // error color
         setTimeout(() => resultText.style.color = '', 5000);
@@ -165,9 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       resultSection.classList.remove('hidden');
     } finally {
-      enhanceBtn.disabled = false;
-      enhanceBtn.innerHTML = '<span class="btn-icon">✨</span><span>Enhance Prompt</span>';
+      btnEl.disabled = false;
+      btnEl.innerHTML = originalBtnHTML;
     }
+  }
+
+  // ─── Enhance Buttons ───
+  enhanceBtn.addEventListener('click', () => {
+    performEnhancement('enhance', enhanceBtn, '<span class="btn-icon">✨</span><span>Enhance</span>');
+  });
+
+  grammarBtn.addEventListener('click', () => {
+    performEnhancement('grammar', grammarBtn, '<span class="btn-icon">📝</span><span>Fix Typos</span>');
   });
 
   // ─── Copy Button ───

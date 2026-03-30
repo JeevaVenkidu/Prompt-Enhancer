@@ -350,6 +350,41 @@ body {
 
 .btn-icon { font-size: 16px; }
 
+/* Secondary Button */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  filter: brightness(1.1);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
 /* Result Section */
 .result-section {
   padding: 14px;
