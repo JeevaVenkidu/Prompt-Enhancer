@@ -54,9 +54,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleAPIEnhancement(message) {
   const { prompt, template, level, apiKey, apiProvider, action } = message;
 
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    throw new Error('Prompt is required and cannot be empty');
+  }
+
+  const validLevels = ['light', 'medium', 'aggressive'];
+  const normalizedLevel = validLevels.includes(level) ? level : 'medium';
+
   const systemPrompt = action === 'grammar'
     ? 'You are an expert English proofreader. Your ONLY task is to correct spelling, grammar, and syntax errors in the user\'s text. Do NOT change the original meaning, do NOT answer their questions, do NOT add conversational filler, and do NOT add markdown formatting unless it was in the original text. ONLY output the corrected text.'
-    : buildSystemPrompt(template, level);
+    : buildSystemPrompt(template, normalizedLevel);
 
   if (apiProvider === 'gemini') {
     return await callGeminiAPI(prompt, systemPrompt, apiKey);
@@ -102,84 +109,130 @@ Rules:
  * Call Gemini API
  */
 async function callGeminiAPI(prompt, systemPrompt, apiKey) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': apiKey,
         },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Please enhance this prompt:\n\n${prompt}` }],
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
           },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
-      }),
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: `Please enhance this prompt:\n\n${prompt}` }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+          },
+        }),
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      let errorMsg = 'API request failed';
+      try {
+        const error = await response.json();
+        errorMsg = error.error?.message || errorMsg;
+      } catch {
+        try {
+          const text = await response.text();
+          errorMsg = `API error: ${text.substring(0, 100)}`;
+        } catch {}
+      }
+      throw new Error(errorMsg);
     }
-  );
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Gemini API request failed');
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      throw new Error('Gemini API returned empty response');
+    }
+
+    return text.trim();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('API request timed out (30s)');
+    }
+    throw error;
   }
-
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!text) {
-    throw new Error('Gemini API returned empty response');
-  }
-
-  return text.trim();
 }
 
 /**
  * Call OpenAI Compatible API (OpenAI, Groq, OpenRouter)
  */
 async function callOpenAICompatibleAPI(prompt, systemPrompt, apiKey, endpoint, model) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${apiKey}`,
   };
 
-  // OpenRouter requires an additional referer header (optional but recommended for ranking)
   if (endpoint.includes('openrouter')) {
     headers['HTTP-Referer'] = 'https://github.com/prompt-enhancer';
     headers['X-Title'] = 'Prompt Enhancer Extension';
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Please enhance this prompt:\n\n${prompt}` },
-      ],
-      temperature: 0.7,
-      max_tokens: 2048,
-    }),
-  });
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Please enhance this prompt:\n\n${prompt}` },
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || 'API request failed');
+    if (!response.ok) {
+      let errorMsg = 'API request failed';
+      try {
+        const error = await response.json();
+        errorMsg = error.error?.message || errorMsg;
+      } catch {
+        try {
+          const text = await response.text();
+          errorMsg = `API error: ${text.substring(0, 100)}`;
+        } catch {}
+      }
+      throw new Error(errorMsg);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+
+    if (!text) {
+      throw new Error('API returned empty response');
+    }
+
+    return text.trim();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('API request timed out (30s)');
+    }
+    throw error;
   }
-
-  const data = await response.json();
-  const text = data.choices?.[0]?.message?.content;
-
-  if (!text) {
-    throw new Error('API returned empty response');
-  }
-
-  return text.trim();
 }

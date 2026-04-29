@@ -214,13 +214,21 @@
       if (template.key === currentSettings.template) {
         item.classList.add('pe-dropdown-item-active');
       }
-      item.innerHTML = `
-        <span class="pe-dropdown-icon">${template.icon}</span>
-        <span class="pe-dropdown-info">
-          <span class="pe-dropdown-name">${template.name}</span>
-          <span class="pe-dropdown-desc">${template.description}</span>
-        </span>
-      `;
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'pe-dropdown-icon';
+      iconSpan.textContent = template.icon;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'pe-dropdown-name';
+      nameSpan.textContent = template.name;
+      const descSpan = document.createElement('span');
+      descSpan.className = 'pe-dropdown-desc';
+      descSpan.textContent = template.description;
+      const infoSpan = document.createElement('span');
+      infoSpan.className = 'pe-dropdown-info';
+      infoSpan.appendChild(nameSpan);
+      infoSpan.appendChild(descSpan);
+      item.appendChild(iconSpan);
+      item.appendChild(infoSpan);
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         currentSettings.template = template.key;
@@ -255,13 +263,21 @@
         medium: 'Add structure, role, and format',
         aggressive: 'Full prompt restructuring',
       };
-      item.innerHTML = `
-        <span class="pe-dropdown-icon">${labels[level].split(' ')[0]}</span>
-        <span class="pe-dropdown-info">
-          <span class="pe-dropdown-name">${labels[level].split(' ')[1]}</span>
-          <span class="pe-dropdown-desc">${descs[level]}</span>
-        </span>
-      `;
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'pe-dropdown-icon';
+      iconSpan.textContent = labels[level].split(' ')[0];
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'pe-dropdown-name';
+      nameSpan.textContent = labels[level].split(' ')[1];
+      const descSpan = document.createElement('span');
+      descSpan.className = 'pe-dropdown-desc';
+      descSpan.textContent = descs[level];
+      const infoSpan = document.createElement('span');
+      infoSpan.className = 'pe-dropdown-info';
+      infoSpan.appendChild(nameSpan);
+      infoSpan.appendChild(descSpan);
+      item.appendChild(iconSpan);
+      item.appendChild(infoSpan);
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         currentSettings.level = level;
@@ -294,13 +310,21 @@
         hybrid: 'Smart AI try, fallback to template',
         online: 'Force AI API (shows exact errors)',
       };
-      item.innerHTML = `
-        <span class="pe-dropdown-icon">${labels[mode].split(' ')[0]}</span>
-        <span class="pe-dropdown-info">
-          <span class="pe-dropdown-name">${labels[mode].split(' ')[1]}</span>
-          <span class="pe-dropdown-desc">${descs[mode]}</span>
-        </span>
-      `;
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'pe-dropdown-icon';
+      iconSpan.textContent = labels[mode].split(' ')[0];
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'pe-dropdown-name';
+      nameSpan.textContent = labels[mode].split(' ')[1];
+      const descSpan = document.createElement('span');
+      descSpan.className = 'pe-dropdown-desc';
+      descSpan.textContent = descs[mode];
+      const infoSpan = document.createElement('span');
+      infoSpan.className = 'pe-dropdown-info';
+      infoSpan.appendChild(nameSpan);
+      infoSpan.appendChild(descSpan);
+      item.appendChild(iconSpan);
+      item.appendChild(infoSpan);
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         currentSettings.mode = mode;

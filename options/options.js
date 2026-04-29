@@ -48,32 +48,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Test API ──
   $('#test-api').addEventListener('click', async () => {
-    chrome.storage.sync.get(['apiKey', 'apiProvider'], async (r) => {
-      if (!r.apiKey) {
-        showToast('No API key saved. Please save one first.', 'error');
-        return;
-      }
-
-      $('#test-api').textContent = 'Testing...';
-
-      try {
-        const response = await chrome.runtime.sendMessage({
-          type: 'ENHANCE_WITH_API',
-          prompt: 'Say hello',
-          template: 'general',
-          level: 'light',
-          apiKey: r.apiKey,
-          apiProvider: r.apiProvider || 'gemini',
-        });
-
-        if (response.error) throw new Error(response.error);
-        showToast('API connection successful! ✅', 'success');
-      } catch (e) {
-        showToast('API test failed: ' + e.message, 'error');
-      } finally {
-        $('#test-api').textContent = 'Test Connection';
-      }
+    const storageData = await new Promise((resolve) => {
+      chrome.storage.sync.get(['apiKey', 'apiProvider'], resolve);
     });
+
+    const { apiKey, apiProvider } = storageData;
+
+    if (!apiKey) {
+      showToast('No API key saved. Please save one first.', 'error');
+      return;
+    }
+
+    $('#test-api').textContent = 'Testing...';
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'ENHANCE_WITH_API',
+        prompt: 'Say hello',
+        template: 'general',
+        level: 'light',
+        apiKey: apiKey,
+        apiProvider: apiProvider || 'gemini',
+      });
+
+      if (response.error) throw new Error(response.error);
+      showToast('API connection successful! ', 'success');
+    } catch (e) {
+      showToast('API test failed: ' + e.message, 'error');
+    } finally {
+      $('#test-api').textContent = 'Test Connection';
+    }
   });
 
   // ── Remove API Key ──
@@ -129,10 +133,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Toast ──
 function showToast(msg, type) {
   const toast = $('#toast');
-  toast.textContent = msg;
-  toast.className = `toast toast-${type}`;
-  requestAnimationFrame(() => toast.classList.add('toast-visible'));
-  setTimeout(() => toast.classList.remove('toast-visible'), 3000);
+  if (!toast) {
+    console.warn('[Prompt Enhancer] Toast element not found');
+    return;
+  }
+  try {
+    toast.textContent = msg;
+    toast.className = `toast toast-${type}`;
+    requestAnimationFrame(() => toast.classList.add('toast-visible'));
+    setTimeout(() => toast.classList.remove('toast-visible'), 3000);
+  } catch (error) {
+    console.error('[Prompt Enhancer] Toast failed:', error);
+  }
 }
 
 // ── Custom Dropdowns ──

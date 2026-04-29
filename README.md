@@ -17,7 +17,7 @@ A Chrome Extension that enhances your prompts on ChatGPT, Claude, and Gemini —
 
 <br />
 
-**Works on** &nbsp; ChatGPT · Claude · Gemini
+**Works on** &nbsp; ChatGPT · Claude · Gemini · Grok · DeepSeek · Perplexity · HuggingChat
 
 </div>
 
@@ -58,7 +58,7 @@ A Chrome Extension that enhances your prompts on ChatGPT, Claude, and Gemini —
 - **Styling**: CSS Variables with glassmorphism design
 - **Typography**: [Inter](https://fonts.google.com/specimen/Inter) (Google Fonts)
 - **Storage**: `chrome.storage` API
-- **AI APIs** (optional): Google Gemini, OpenAI
+- **AI APIs** (optional): Google Gemini, OpenAI, Groq, OpenRouter
 
 ---
 
@@ -143,7 +143,7 @@ Uses built-in enhancement algorithms and templates. Works completely offline. Gr
 Add your own API key for smarter, context-aware enhancement:
 
 1. Click the **⚙️ Settings** icon in the popup
-2. Choose **Google Gemini** or **OpenAI**
+2. Choose **Google Gemini**, **OpenAI**, **Groq**, or **OpenRouter**
 3. Paste your API key
 4. Click **Save API Key**
 
@@ -151,6 +151,8 @@ Add your own API key for smarter, context-aware enhancement:
 |----------|-----------|-------------|
 | **Google Gemini** | ✅ Generous free tier | [Google AI Studio](https://aistudio.google.com/apikey) |
 | **OpenAI** | ❌ Pay-as-you-go | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| **Groq** | ✅ Free tier | [Groq Console](https://console.groq.com/keys) |
+| **OpenRouter** | ✅ Free tier | [OpenRouter](https://openrouter.ai/keys) |
 
 > **🔒 Security:** Your API key is stored locally in `chrome.storage.sync` and never leaves your browser except for API calls.
 

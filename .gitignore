@@ -12,3 +12,4 @@ package-lock.json
 
 # Logs
 *.log
+.AGENTS.md
